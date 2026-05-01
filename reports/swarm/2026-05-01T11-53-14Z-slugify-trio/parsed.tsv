@@ -1,0 +1,12 @@
+1	ts	WORKER_ID
+1	opencode	WORKER_TOOL
+1	projects/swarm-demo-slugify/ts	WORKER_DIR
+1	reports/swarm/2026-05-01T11-53-14Z-slugify-trio/prompts/1-ts.prompt.txt	WORKER_PROMPT_FILE
+2	py	WORKER_ID
+2	opencode	WORKER_TOOL
+2	projects/swarm-demo-slugify/py	WORKER_DIR
+2	reports/swarm/2026-05-01T11-53-14Z-slugify-trio/prompts/2-py.prompt.txt	WORKER_PROMPT_FILE
+3	go	WORKER_ID
+3	opencode	WORKER_TOOL
+3	projects/swarm-demo-slugify/go	WORKER_DIR
+3	reports/swarm/2026-05-01T11-53-14Z-slugify-trio/prompts/3-go.prompt.txt	WORKER_PROMPT_FILE

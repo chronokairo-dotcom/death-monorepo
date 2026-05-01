@@ -1,0 +1,3 @@
+[swarm] epic=slugify trio run_dir=reports/swarm/2026-05-01T11-53-14Z-slugify-trio
+[swarm] launching 3 workers in parallel
+[swarm] all workers finished

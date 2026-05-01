@@ -1,0 +1,7 @@
+Crie uma lib TypeScript chamada slugify.
+Arquivos:
+- package.json com {"name":"@swarm/slugify-ts","version":"0.1.0","type":"module","main":"index.js","scripts":{"test":"node --test"}}
+- index.ts (e compile pra index.js): export function slugify(input: string, opts?: {separator?: string}): string. Lowercase, troca espaços e símbolos por separator (default '-'), remove acentos via NFD, colapsa separators, trim das pontas.
+- index.test.js: 4 testes node:test cobrindo basic, acento (São Paulo -> sao-paulo), separator custom, edge case string vazia.
+- README.md curto.
+Não use deps. Apenas Node nativo (stdlib). Garanta que `node --test` passa.

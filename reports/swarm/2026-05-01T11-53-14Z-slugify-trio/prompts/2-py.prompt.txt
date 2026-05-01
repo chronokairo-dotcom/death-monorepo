@@ -1,0 +1,7 @@
+Crie uma lib Python pura chamada slugify_py.
+Arquivos:
+- pyproject.toml mínimo (name slugify-py, version 0.1.0, python>=3.8)
+- slugify_py/__init__.py com def slugify(text: str, separator: str = "-") -> str. Lowercase, NFD (unicodedata) pra strip acentos, troca não-alfanuméricos por separator, colapsa, trim.
+- tests/test_slugify.py com unittest cobrindo: basic, acento (São Paulo -> sao-paulo), separator custom, vazio. Roda com `python -m unittest`.
+- README.md curto.
+Sem deps externas. Garanta que `python -m unittest` passa.

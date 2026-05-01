@@ -1,0 +1,7 @@
+Crie um pacote Go chamado slugify.
+Arquivos:
+- go.mod (module github.com/chronokairo-dotcom/death-monorepo/projects/swarm-demo-slugify/go, go 1.21)
+- slugify.go com func Slugify(s string, separator string) string. Lowercase, normaliza unicode (golang.org/x/text/unicode/norm NFD se quiser, mas prefira sem deps externas — implemente com runes manualmente removendo combining marks via unicode.IsMark). Troca não-alfanum por separator, colapsa, trim.
+- slugify_test.go com 4 casos: basic, "São Paulo" -> "sao-paulo", separator custom "_", vazio.
+- README.md curto.
+Use APENAS stdlib (unicode, unicode/utf8, strings). Garanta que `go test ./...` passa.

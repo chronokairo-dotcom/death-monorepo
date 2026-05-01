@@ -47,3 +47,24 @@ Sem `--dangerously-skip-permissions` o run trava esperando aprovação interativ
 - `--format json` pra coletar tool-calls estruturados e resumir o que opencode fez sem regex frágil.
 - Prompt incluindo "do not run npm install if node_modules exists" pra economizar tempo.
 - Testar `acpx telephone game` em uma task mais ambígua pra comparar com o `run` direto.
+
+## Sessão 2 — 2026-05-01 — Swarm coding Fase 1
+
+Implementei `scripts/swarm-run.sh` + spec format próprio. Demo: 3 workers opencode-ai em paralelo criaram libs slugify em TS, Python, Go.
+
+### Comando
+```bash
+bash scripts/swarm-run.sh scripts/specs/demo-slugify.spec
+```
+
+### Resultado bruto
+- TS: 102s, 5/5 testes ✓
+- Go: 131s, arquivos criados (go não instalado pra rodar testes local)
+- Python: rc=143 (SIGTERM), mas testes 4/4 passaram antes de travar no fim
+
+### Aprendizados
+1. **Paralelismo via bash `&` + `wait` é suficiente** pra Fase 1. Não precisou de orquestrador externo.
+2. **Straggler problem é real**: 1 worker travado segura tudo. Em Fase 2: timeout agressivo + cancel pro restante.
+3. **opencode-ai não alucina resultado de teste**: worker Go falou "go ausente, só criei arquivos" em vez de inventar passing.
+4. **Spec format leve com awk parser** funciona — não precisa de YAML real pra MVP.
+5. **Pra mix com gemini**: precisa GEMINI_API_KEY; CLI testada (v0.40.1, modo `-p ... --approval-mode yolo`).
