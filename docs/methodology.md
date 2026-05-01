@@ -68,3 +68,28 @@ bash scripts/swarm-run.sh scripts/specs/demo-slugify.spec
 3. **opencode-ai não alucina resultado de teste**: worker Go falou "go ausente, só criei arquivos" em vez de inventar passing.
 4. **Spec format leve com awk parser** funciona — não precisa de YAML real pra MVP.
 5. **Pra mix com gemini**: precisa GEMINI_API_KEY; CLI testada (v0.40.1, modo `-p ... --approval-mode yolo`).
+
+## Sessão 3 — 2026-05-01 — Contribuição em ChronoKairo/sacidata
+
+Tarefa: limpeza de raiz + aplicar bug fixes pendentes + testes em repo externo da org.
+
+### Tentativa 1: opencode-ai
+- Travou silenciosamente após ~12min, zero output, zero mudança no working tree
+- Matei via SIGTERM
+- Hipótese: contexto do repo (~106kb + muito .md de meta) confundiu o agent
+
+### Tentativa 2: gemini-cli (fallback dentro da regra)
+- Rodou ~80% em ~3min reais
+- Bateu quota free (`gemini-3-flash`, 5 req/min) — erro 429
+- Mas o output até ali foi cirúrgico: git mv corretos, fix em dataController, teste novo bem feito
+
+### Manual extraordinário (registrado como exceção)
+- README + todo finalizados (são docs, permitidos pela regra)
+- `npm install` + `npm test` rodados pra validar — 4/4 verdes
+- Commit + push pra fork (sem permissão de PR API → link manual)
+
+### Lições Sessão 3
+1. Contexto pesado de meta-docs degrada ambos os agentes — limpar antes de pedir feature
+2. `gemini-3-flash` free tier é caprichoso; usar pra fatias < 5min
+3. Estruturas duplicadas de código (3 controllers/) precisam de "canonical" explícita no prompt
+4. PAT da conta de trabalho sem write na org → estratégia padrão: fork + branch + link manual de PR
