@@ -112,7 +112,8 @@ run_worker() {
         >> "$log" 2>&1 || rc=$?
       ;;
     gemini)
-      ( cd "$dir" && timeout 900 gemini -p "$prompt" --approval-mode yolo ) \
+      ( cd "$dir" && GEMINI_CLI_TRUST_WORKSPACE=true timeout 900 \
+          gemini -p "$prompt" --approval-mode yolo --skip-trust ) \
         >> "$log" 2>&1 || rc=$?
       ;;
     *)
