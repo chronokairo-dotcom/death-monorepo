@@ -1,10 +1,10 @@
-import 'dotenv/config';
 import { Client, Collection, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { chat } from './llm.js';
 import { remember, recall } from './memory.js';
+import { loadConfig } from './config.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -87,9 +87,12 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
-if (!process.env.DISCORD_TOKEN) {
-  console.error('Missing DISCORD_TOKEN in env. Copy .env.example to .env and fill it in.');
+let config;
+try {
+  config = loadConfig();
+} catch (err) {
+  console.error(err.message);
   process.exit(1);
 }
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(config.discordToken);

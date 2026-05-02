@@ -1,14 +1,16 @@
-import 'dotenv/config';
 import { REST, Routes } from 'discord.js';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
+import { loadConfig } from './config.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } = process.env;
-if (!DISCORD_TOKEN || !CLIENT_ID) {
-  console.error('Need DISCORD_TOKEN and CLIENT_ID in .env');
+let config;
+try {
+  config = loadConfig();
+} catch (err) {
+  console.error(err.message);
   process.exit(1);
 }
 
@@ -20,13 +22,13 @@ for (const file of readdirSync(commandsPath).filter((f) => f.endsWith('.js'))) {
   if (cmd?.data) commands.push(cmd.data.toJSON());
 }
 
-const rest = new REST().setToken(DISCORD_TOKEN);
+const rest = new REST().setToken(config.discordToken);
 
 try {
   console.log(`Deploying ${commands.length} commands...`);
-  const route = GUILD_ID
-    ? Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID)
-    : Routes.applicationCommands(CLIENT_ID);
+  const route = config.guildId
+    ? Routes.applicationGuildCommands(config.discordClientId, config.guildId)
+    : Routes.applicationCommands(config.discordClientId);
   const data = await rest.put(route, { body: commands });
   console.log(`:> deployed ${data.length} commands ${GUILD_ID ? `to guild ${GUILD_ID}` : 'globally'}`);
 } catch (err) {

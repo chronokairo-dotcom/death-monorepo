@@ -93,3 +93,58 @@ Tarefa: limpeza de raiz + aplicar bug fixes pendentes + testes em repo externo d
 2. `gemini-3-flash` free tier é caprichoso; usar pra fatias < 5min
 3. Estruturas duplicadas de código (3 controllers/) precisam de "canonical" explícita no prompt
 4. PAT da conta de trabalho sem write na org → estratégia padrão: fork + branch + link manual de PR
+
+## Sessão 4 — 2026-05-02 — opencode default model trap
+
+Task: extrair `loadConfig()` testável do discord-bot. Modo SOLO.
+
+### Trilha de tentativas (cronológica, crua)
+
+1. **`opencode run --dir projects/discord-bot ...`** (sem `--model`)
+   → erro imediato: `Google Generative AI API key is missing. Pass it using the 'apiKey' parameter or the GOOGLE_GENERATIVE_AI_API_KEY environment variable.`
+   → diagnose: opencode default agora é `gemini-3-pro-preview`. `GEMINI_API_KEY` (no env) **não** é suficiente; opencode procura `GOOGLE_GENERATIVE_AI_API_KEY` especificamente.
+
+2. **`GOOGLE_GENERATIVE_AI_API_KEY=$GEMINI_API_KEY opencode run ...`**
+   → durou ~10min, exit code 0, log final: `> build · gemini-3-pro-preview` e nada mais.
+   → working tree intocado. **Silent success**.
+   → hipótese: modelo em queue/throttle do AI Studio sem propagar erro pro CLI. Pior modo de falha possível.
+
+3. **Fallback `gemini -p ... --approval-mode yolo --skip-trust`** (regra ChronoKairo: se opencode falha, tenta gemini)
+   → primeiro 503 `UNAVAILABLE` (high demand)
+   → depois `TerminalQuotaError: You have exhausted your daily quota` em `gemini-3-flash` (free tier 20 req/dia esgotado).
+   → gemini-cli **inútil hoje** com este key.
+
+4. **`opencode run --model opencode/big-pickle ...`** ← vencedor
+   → ~3min wall-clock, 12/12 testes verde, patch limpo.
+   → `opencode/big-pickle` é o modelo do opencode-zen que **funciona sem credencial extra**.
+
+### Comando final que funcionou
+```bash
+opencode run --model opencode/big-pickle \
+  --dir projects/discord-bot \
+  --dangerously-skip-permissions \
+  "<prompt>"
+```
+
+### Output (resumo)
+- `src/config.js` criado, `loadConfig(env=process.env)` validando DISCORD_TOKEN + DISCORD_CLIENT_ID, frozen output.
+- `src/config.test.js` com 8 sub-testes em 1 suite.
+- `src/index.js`, `src/deploy-commands.js` migrados pra `loadConfig()`.
+- `npm test` final: 2 suites, 12 tests, 0 fail.
+
+### Lições novas
+1. **NUNCA confiar em `opencode run` sem `--model` explícito.** Default mudou silenciosamente pra modelo Google e tem dois modos de falha (auth missing OU silent-success). Cron com isso = horas perdidas.
+2. **`opencode/big-pickle` é o modelo padrão de fato** pra cron headless agora. Sem auth extra, sem quota visível, comportamento consistente.
+3. **Silent-success é pior que crash.** Exit 0 + `> build · <model>` no final SEM diff = sinal de morte. Sempre verificar `git status` depois do run e fail-fast se vazio.
+4. **gemini-cli com key free está morto pro nosso loop.** Quota de 20 req/dia em `gemini-3-flash` evapora em 1 task. Manter como fallback simbólico até trocar pra paid tier ou outro provider.
+5. **Ordem de fallback atualizada** (substitui Sessão 1): 
+   - 1ª: `opencode run --model opencode/big-pickle --dangerously-skip-permissions ...`
+   - 2ª: outro modelo opencode-zen (`opencode/gpt-5-nano`, `opencode/minimax-m2.5-free`)
+   - 3ª: gemini-cli **só se** alguém renovar o key/tier
+   - 4ª: registrar exceção e fazer manual (proibido por regra ChronoKairo, então prefere swarm-retry com modelos diferentes)
+6. **Custo de tempo da sessão**: ~25min wall, dos quais ~15min queimados em tentativas mortas. Patch real: ~3min. Razão sinal/ruído ruim hoje, mas a lição vale pras próximas semanas.
+
+### Action items pra repo
+- Atualizar `scripts/swarm-run.sh` pra forçar `--model opencode/big-pickle` em workers `tool: opencode` (próxima sessão).
+- Adicionar nota no README do swarm: "sempre passar --model em headless".
+
